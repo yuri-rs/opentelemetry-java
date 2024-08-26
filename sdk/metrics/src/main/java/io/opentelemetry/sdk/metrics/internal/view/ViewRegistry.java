@@ -106,7 +106,12 @@ public final class ViewRegistry {
         AggregatorFactory viewAggregatorFactory =
             (AggregatorFactory) entry.getView().getAggregation();
         if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
-          result.add(entry);
+          // if attributes is not given in custom view and attributes advice defined for instrument, use it
+          if (entry.getViewAttributesProcessor() == AttributesProcessor.noop() && descriptor.getAdvice().hasAttributes()) {
+            result.add(applyAdviceToDefaultView(entry, descriptor.getAdvice()));
+          } else {
+            result.add(entry);
+          }
         } else {
           logger.log(
               Level.WARNING,
